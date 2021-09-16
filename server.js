@@ -23,10 +23,10 @@ const itemStoreModel = mongoose.model('storeItem', choclateSchema);
 
 server.get('/', getHandler);
 server.get('/callApiData',apiHandlear);
-server.post('/storeApiDatadb',storedbHandlear);
+server.post('/storeApiDatadb/:email',storedbHandlear);
 server.get('/callFavortItem',favoratItemHandlear);
 server.delete('/deleteItem/:id',deleteItemHandlear);
-server.put('/upDateItem/:_id',upDateItemHandlear);
+server.put('/upDateItem/:id',upDateItemHandlear);
 
 ////////////////////////////////////getHandler
 function getHandler(req, res) {
@@ -36,25 +36,25 @@ function getHandler(req, res) {
 ///////////////////////////////////api data
 /////////////http://localhost:3008/callApiData
 function apiHandlear(req, res) {
-    console.log("inside getApiData");
+    // console.log("inside getApiData");
     const url = 'https://ltuc-asac-api.herokuapp.com/allChocolateData';
     axios.get(url).then(apiCont => {
         let storeData = apiCont.data.map(storeCons => {
             return new choclatedataHitServer(storeCons)
         })
-        console.log(storeData,"storeData result");
+        // console.log(storeData,"storeData result");
         res.send(storeData)
     }).catch(error=>{
-        console.log(error,"get 3 api data erroe");
+        // console.log(error,"get 3 api data erroe");
     })
-    console.log("getApidata");
+    // console.log("getApidata");
 }
 /////////////////////////////////store in db
 /////////////http://localhost:3008/storeApiDatadb
 function storedbHandlear(req,res){
-console.log("storeApiDatadb server work");
+// console.log("storeApiDatadb server work");
 const { title, imageUrl, id } = req.body
-const email = req.query.email
+const email = req.params.email
 itemStoreModel.find({ id: id }, (error, dataChoclate) => {
     if (dataChoclate.length > 0) {
         res.send("already exist")
@@ -67,7 +67,7 @@ itemStoreModel.find({ id: id }, (error, dataChoclate) => {
 
         })
         choclateData.save()
-        console.log(choclateData,"choclateData result");
+        // console.log(choclateData,"choclateData result");
         res.send(choclateData)
     }
 })
@@ -77,7 +77,8 @@ itemStoreModel.find({ id: id }, (error, dataChoclate) => {
 function favoratItemHandlear(req,res){
     const email = req.query.email
     itemStoreModel.find({ email: email }, (error, storeItem) => {
-        res.send(storeItem)
+        console.log(storeItem,"storeItem result");
+              res.send(storeItem)
     })
 }
 //////////////////////////////////////////deletItem
@@ -93,14 +94,18 @@ function deleteItemHandlear(req,res){
 }
 /////////////////////////////////////updateItem
 function upDateItemHandlear(req,res){
-    const { img, name } = req.body
-    const id = req.params._id
+    const { imageUrl, title } = req.body
+    console.log(req.body,"req.body result");
+    console.log(req.body.imageUrl,"req.body.imageUrl result");
+    console.log(req.body.title,"req.body.title result");
+    const id = req.params.id
     itemStoreModel.findOne({ _id: id }, (error, storeData) => {
         if (storeData === null) {
             res.send("not exist")
         } else {
-            storeData.img = img;
-            storeData.name = name;
+            storeData.imageUrl = imageUrl;
+            storeData.title = title;
+            
             storeData.save();
             res.send(storeData);
 
